@@ -1,6 +1,8 @@
 import unittest
 from inline_markdown import (
     split_nodes_delimiter,
+    extract_markdown_images,
+    extract_markdown_links,
 )
 
 from textnode import (
@@ -83,6 +85,40 @@ class TestInlineMarkdown(unittest.TestCase):
         node = TextNode("This is text with an `invalid delim", text_type_text)
         with self.assertRaises(ValueError):
             split_nodes_delimiter([node], "`", text_type_code)
+
+    def test_extract_markdown_images(self):
+        node = TextNode(
+            "This is text with an ![image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png) and ![another](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png)",
+            text_type_text,
+        )
+        new_tuple = extract_markdown_images(node.text)
+        self.assertListEqual(
+            [
+                (
+                    "image",
+                    "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png",
+                ),
+                (
+                    "another",
+                    "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png",
+                ),
+            ],
+            new_tuple,
+        )
+
+    def test_extract_markdown_links(self):
+        node = TextNode(
+            "This is text with a [link](https://www.example.com) and [another](https://www.example.com/another) ",
+            text_type_text,
+        )
+        new_tuple = extract_markdown_links(node.text)
+        self.assertListEqual(
+            [
+                ("link", "https://www.example.com"),
+                ("another", "https://www.example.com/another"),
+            ],
+            new_tuple,
+        )
 
 
 if __name__ == "__main__":
